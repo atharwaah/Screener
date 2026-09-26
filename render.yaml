@@ -1,0 +1,44 @@
+services:
+  # ---------------------------------------------------------
+  # Backend - FastAPI
+  # ---------------------------------------------------------
+  - type: web
+    name: resistance-scanner-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      # Set this by hand in the Render dashboard to your Neon/Supabase
+      # connection string. Left out of the blueprint on purpose - it's
+      # a secret, and a Free Render Postgres (30-day expiry) isn't a
+      # good fit for something meant to persist your paper trades.
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://resistance-scanner.onrender.com
+      - key: INITIAL_PAPER_CAPITAL
+        value: 100000
+      - key: SCAN_MAX_WORKERS
+        value: 16
+
+  # ---------------------------------------------------------
+  # Frontend - Vite/React static site
+  # ---------------------------------------------------------
+  - type: web
+    name: resistance-scanner
+    runtime: static
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      # Vite bakes VITE_* vars in at BUILD time, so this must point at
+      # the backend service's URL before the build runs.
+      - key: VITE_API_BASE_URL
+        value: https://resistance-scanner-api.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html

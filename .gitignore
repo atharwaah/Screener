@@ -1,0 +1,22 @@
+# --- Backend (Python) ---
+backend/.env
+backend/__pycache__/
+backend/app/__pycache__/
+**/__pycache__/
+*.pyc
+*.db
+
+# Old local price cache - no longer used now that the cache lives in
+# the database (see app/data_cache.py). Safe to delete locally too.
+backend/data/cache/
+
+# --- Frontend (Node) ---
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+frontend/.env.local
+
+# --- OS / editor ---
+.DS_Store
+.vscode/
+.idea/
