@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+pandas
+numpy
+yfinance
+sqlalchemy
+psycopg[binary]
+pydantic
+pydantic-settings
+python-dotenv
