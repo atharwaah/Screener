@@ -4,7 +4,7 @@ pandas
 numpy
 yfinance
 sqlalchemy
-psycopg[binary]
+psycopg[binary]==3.2.10
 pydantic
 pydantic-settings
 python-dotenv
