@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 DATA_DIR = BASE_DIR / "data"
 
-NIFTY_500_FILE = DATA_DIR / "nifty500.csv"
+NIFTY_500_FILE = DATA_DIR / "nifty_total_market.csv"
 
 
 NIFTY_TEST_UNIVERSE = [
