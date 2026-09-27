@@ -172,6 +172,7 @@ def scan_stock(
     timeframe: str = "1wk",
     near_resistance_percent: float = 10,
     force_refresh: bool = False,
+    preloaded_cache: dict | None = None,
 ):
 
     if timeframe not in TIMEFRAME_SETTINGS:
@@ -185,6 +186,7 @@ def scan_stock(
         symbol,
         timeframe,
         force_refresh=force_refresh,
+        preloaded_cache=preloaded_cache,
     )
 
     if data.empty:
@@ -334,6 +336,7 @@ def scan_stock(
 def scan_new_52w_high(
     symbol: str,
     force_refresh: bool = False,
+    preloaded_cache: dict | None = None,
 ):
 
     minimum_lookback = 30
@@ -342,6 +345,7 @@ def scan_new_52w_high(
         symbol,
         "1d",
         force_refresh=force_refresh,
+        preloaded_cache=preloaded_cache,
     )
 
     if data.empty:
@@ -350,6 +354,7 @@ def scan_new_52w_high(
             "symbol": symbol,
             "status": "NO_DATA",
         }
+
 
     available_candles = len(data)
 

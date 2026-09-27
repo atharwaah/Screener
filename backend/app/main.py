@@ -1,10 +1,10 @@
-
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from . import paper_trading
 from .config import settings
+from .data_cache import load_cached_data_bulk
 from .database import Base, engine, get_db
 from .scanner import (
     scan_stock,
@@ -167,6 +167,10 @@ def scan_nifty500(
 
     symbols = get_nifty_500_symbols()
 
+    preloaded_cache = (
+        {} if force_refresh else load_cached_data_bulk(symbols, timeframe)
+    )
+
     results = scan_symbols_parallel(
         symbols,
         lambda symbol: scan_stock(
@@ -174,6 +178,7 @@ def scan_nifty500(
             timeframe=timeframe,
             near_resistance_percent=near_resistance_percent,
             force_refresh=force_refresh,
+            preloaded_cache=preloaded_cache,
         ),
         max_workers=settings.SCAN_MAX_WORKERS,
     )
@@ -265,11 +270,16 @@ def scan_nifty500_new_highs(
 
     symbols = get_nifty_500_symbols()
 
+    preloaded_cache = (
+        {} if force_refresh else load_cached_data_bulk(symbols, "1d")
+    )
+
     results = scan_symbols_parallel(
         symbols,
         lambda symbol: scan_new_52w_high(
             symbol,
             force_refresh=force_refresh,
+            preloaded_cache=preloaded_cache,
         ),
         max_workers=settings.SCAN_MAX_WORKERS,
     )

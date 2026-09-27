@@ -95,7 +95,7 @@ def save_cached_data(
                 symbol=symbol,
                 timeframe=timeframe,
                 data=payload,
-                updated_at=datetime.utcnow(),
+                updated_at=datetime.now(timezone.utc).replace(tzinfo=None),
             )
             db.add(row)
         else:
@@ -108,6 +108,38 @@ def save_cached_data(
         db.rollback()
         print(f"Cache save failed for {symbol} {timeframe}: {e}")
 
+    finally:
+        db.close()
+
+
+def load_cached_data_bulk(symbols: list[str], timeframe: str) -> dict[str, pd.DataFrame]:
+    """
+    Loads cache for every symbol in one DB round trip instead of the
+    N-query pattern in load_cached_data(). Missing key == cache miss.
+    """
+    db = SessionLocal()
+    try:
+        rows = (
+            db.query(PriceCache)
+            .filter(
+                PriceCache.symbol.in_(symbols),
+                PriceCache.timeframe == timeframe,
+            )
+            .all()
+        )
+
+        result = {}
+        for row in rows:
+            if not _is_fresh(row.updated_at):
+                continue
+            try:
+                data = pd.read_json(StringIO(row.data), orient="table")
+                if isinstance(data, pd.DataFrame) and not data.empty:
+                    result[row.symbol] = data
+            except Exception as e:
+                print(f"Cache decode failed for {row.symbol} {timeframe}: {e}")
+
+        return result
     finally:
         db.close()
 

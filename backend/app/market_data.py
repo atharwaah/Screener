@@ -25,6 +25,7 @@ def get_stock_data(
     symbol: str,
     timeframe: str,
     force_refresh: bool = False,
+    preloaded_cache: dict | None = None,
 ) -> pd.DataFrame:
 
     if timeframe not in TIMEFRAME_CONFIG:
@@ -32,18 +33,24 @@ def get_stock_data(
             f"Unsupported timeframe: {timeframe}"
         )
 
-    cached_data = load_cached_data(
-        symbol,
-        timeframe,
-        force_refresh=force_refresh,
-    )
+    if not force_refresh:
 
-    if cached_data is not None:
-        print(
-            f"[CACHE] {symbol} {timeframe}"
+        cached_data = (
+            preloaded_cache.get(symbol)
+            if preloaded_cache is not None
+            else load_cached_data(
+                symbol,
+                timeframe,
+                force_refresh=force_refresh,
+            )
         )
 
-        return cached_data
+        if cached_data is not None:
+            print(
+                f"[CACHE] {symbol} {timeframe}"
+            )
+
+            return cached_data
 
     print(
         f"[YAHOO] Downloading {symbol} {timeframe}"
