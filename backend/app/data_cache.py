@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from io import StringIO
 
 import pandas as pd
@@ -39,9 +39,9 @@ def _get_row(db, symbol: str, timeframe: str) -> PriceCache | None:
 
 
 def _is_fresh(updated_at: datetime) -> bool:
-    return (datetime.utcnow() - updated_at) < timedelta(
-        hours=CACHE_MAX_AGE_HOURS
-    )
+    return (
+    datetime.now(timezone.utc).replace(tzinfo=None) - updated_at
+    ) < timedelta(hours=CACHE_MAX_AGE_HOURS)
 
 
 def load_cached_data(
