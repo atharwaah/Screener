@@ -35,7 +35,7 @@ services:
       # Vite bakes VITE_* vars in at BUILD time, so this must point at
       # the backend service's URL before the build runs.
       - key: VITE_API_BASE_URL
-        value: https://resistance-scanner-api.onrender.com
+        value: https://screener-lo2j.onrender.com
     routes:
       - type: rewrite
         source: /*
