@@ -100,7 +100,7 @@ def save_cached_data(
             db.add(row)
         else:
             row.data = payload
-            row.updated_at = datetime.utcnow()
+            row.updated_at = datetime.now(timezone.utc).replace(tzinfo=None)
 
         db.commit()
 
