@@ -38,13 +38,23 @@ def get_or_create_account(db: Session) -> PaperAccount:
     return account
 
 
-def get_current_price(symbol: str) -> float:
+def get_current_price(
+    symbol: str,
+    force_refresh: bool = False,
+) -> float:
     """
-    Reuses the same cached daily data the scanner uses, so a paper
-    trade fills at the same last-close price shown in the scanner/chart.
+    Returns the latest available daily price.
+
+    Paper trading must not use the scanner's 4-hour cache for fills
+    or open-position valuation, otherwise LTP and P&L can remain
+    stuck at the entry price for hours.
     """
 
-    data = get_stock_data(symbol, "1d")
+    data = get_stock_data(
+        symbol,
+        "1d",
+        force_refresh=force_refresh,
+    )
 
     if data.empty:
         raise PaperTradingError(
@@ -80,7 +90,7 @@ def buy(db: Session, symbol: str, quantity: int) -> Trade:
         symbol = f"{symbol}.NS"
 
     account = get_or_create_account(db)
-    price = get_current_price(symbol)
+    price = get_current_price(symbol, force_refresh=True)
     cost = price * quantity
 
     if cost > account.cash:
@@ -140,7 +150,7 @@ def sell(db: Session, symbol: str, quantity: int) -> Trade:
             f"Cannot sell {quantity} {symbol}: only {held} held"
         )
 
-    price = get_current_price(symbol)
+    price = get_current_price(symbol, force_refresh=True)
     proceeds = price * quantity
 
     position.quantity -= quantity
@@ -181,7 +191,7 @@ def get_portfolio(db: Session) -> dict:
     for position in positions:
 
         try:
-            current_price = get_current_price(position.symbol)
+            current_price = get_current_price(position.symbol, force_refresh=True)
         except PaperTradingError:
             current_price = None
 
