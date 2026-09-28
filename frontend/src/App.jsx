@@ -338,6 +338,19 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
+  // Keep open-position LTP and P&L refreshed while the portfolio is visible.
+  // The backend bypasses the scanner cache for these portfolio price reads.
+  useEffect(() => {
+    if (activeTab !== "portfolio") return;
+
+    const intervalId = window.setInterval(() => {
+      loadPortfolio();
+    }, 60000);
+
+    return () => window.clearInterval(intervalId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
   // Current holding for whichever stock is open in the chart modal
   const selectedPosition = useMemo(() => {
     if (!selectedStock || !portfolio) return null;
